@@ -245,7 +245,7 @@ img{max-width:100%;display:block;}
   margin:0;
   font-size:1.5rem;font-weight:800;
   color:var(--panel-heading, var(--white));
-  font-family:'Times New Roman', Times, serif;
+  font-family:'Playfair Display', Georgia, serif;
 }
 .project-subtitle{
   margin:4px 0 0;
