@@ -223,7 +223,7 @@ img{max-width:100%;display:block;}
   align-items:center;
   text-align:center;
   gap:8px;
-  max-width:440px;
+  max-width:400px;
   margin:32px auto 0;
 }
 .project-spotlight .project-thumb{margin-bottom:0;}
