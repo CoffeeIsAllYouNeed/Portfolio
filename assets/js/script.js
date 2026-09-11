@@ -190,16 +190,13 @@
      instantly, back to the old panel's — which is what caused the
      navbar to appear stuck/delayed instead of switching the moment
      a new page arrived. */
-  /* Only reduced-motion users opt out of the scroll-jacking paging
-     system below and get plain native scrolling instead. Touch
-     devices used to be excluded here too (each panel's height was
-     measured once up front, and late-loading mobile content like the
-     GitHub graph could grow taller than that stale measurement,
-     making the rest unreachable) — setupSectionPaging now measures
-     live instead of caching, so that no longer applies and touch
-     gets the same one-swipe-per-page paging as desktop. */
+  /* Touch/mobile devices skip the custom scroll-jacking paging system
+     below (see setupSectionPaging for why) and get plain native
+     scrolling instead — same as prefers-reduced-motion users. Shared
+     by both functions so they always agree on which mode is active. */
   function pagingDisabled() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+           window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   }
 
   function setupNavbarTheme() {
@@ -264,13 +261,20 @@
        - Reduced-motion users get plain native scrolling; this
          controller does nothing for them. */
   function setupSectionPaging() {
-    // Every wheel/touch/keyboard input is routed through this single
-    // controller (see handleDelta below), which reads each stop's
-    // position and height live off the DOM rather than caching them,
-    // so a section that grows after load (the GitHub graph arriving
-    // late, images decoding in) is always measured correctly — no
-    // stale numbers, no unreachable content, on short viewports or
-    // tall ones.
+    // Mobile/touch devices rely on plain native scrolling instead of
+    // this controller. This controller measures each section's
+    // height once up front and clamps how far a wheel/touch delta is
+    // allowed to scroll within it. That's fine on desktop, where
+    // viewports are tall enough that async content (e.g. the GitHub
+    // graph, which loads after a network fetch) rarely pushes a
+    // section taller than the stale measurement. On short mobile
+    // viewports it isn't: sections like Projects, GitHub, and Contact
+    // are routinely taller than one screen, so once content finishes
+    // loading after the initial measurement, the extra height becomes
+    // unreachable — the user can't scroll far enough to see the rest
+    // of the projects, the full contribution graph, or the contact
+    // photo. Native scrolling has no such cache to go stale, so it
+    // always reaches exactly as far as the real content requires.
     if (pagingDisabled()) return;
 
     const panels = Array.from(document.querySelectorAll('.panel'));
@@ -297,19 +301,17 @@
     // role at a time — landing exactly on the next entry instead of
     // leaving two partway visible at once — while every other panel
     // keeps behaving exactly as before.
-    // Each stop keeps a reference to its own element rather than a
-    // cached top/height, so boundsFor()/goTo() always read its
-    // current position and size straight off the DOM — correct even
-    // if the element has grown since the page loaded.
     let stops = [];
     function measure() {
       stops = [];
       panels.forEach(panel => {
         const items = Array.from(panel.querySelectorAll('.exp-item'));
         if (items.length) {
-          items.forEach(item => stops.push({ panel, node: item }));
+          items.forEach(item => {
+            stops.push({ panel, top: docTop(item), height: item.offsetHeight });
+          });
         } else {
-          stops.push({ panel, node: panel });
+          stops.push({ panel, top: panel.offsetTop, height: panel.offsetHeight });
         }
       });
     }
@@ -317,14 +319,10 @@
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
 
-    function stopTop(s) {
-      return s.node === s.panel ? s.node.offsetTop : docTop(s.node);
-    }
-
     function boundsFor(i) {
       const s = stops[i];
-      const start = stopTop(s);
-      const end = Math.max(start, start + s.node.offsetHeight - window.innerHeight);
+      const start = s.top;
+      const end = Math.max(start, start + s.height - window.innerHeight);
       return { start, end };
     }
 
@@ -345,7 +343,7 @@
     (function initIdx() {
       const y = window.scrollY;
       for (let i = 0; i < stops.length; i++) {
-        if (y >= stopTop(stops[i]) - 2) idx = i;
+        if (y >= stops[i].top - 2) idx = i;
       }
       applyTheme(stops[idx].panel);
     })();
@@ -392,7 +390,7 @@
       newIdx = Math.max(0, Math.min(stops.length - 1, newIdx));
       idx = newIdx;
       applyTheme(stops[idx].panel);
-      animateTo(stopTop(stops[idx]));
+      animateTo(stops[idx].top);
       cooldownUntil = performance.now() + COOLDOWN;
     }
 
