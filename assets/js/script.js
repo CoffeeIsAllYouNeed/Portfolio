@@ -190,8 +190,17 @@
      instantly, back to the old panel's — which is what caused the
      navbar to appear stuck/delayed instead of switching the moment
      a new page arrived. */
+  /* Touch/mobile devices skip the custom scroll-jacking paging system
+     below (see setupSectionPaging for why) and get plain native
+     scrolling instead — same as prefers-reduced-motion users. Shared
+     by both functions so they always agree on which mode is active. */
+  function pagingDisabled() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+           window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  }
+
   function setupNavbarTheme() {
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!pagingDisabled()) return;
 
     const navbar = document.querySelector('.navbar');
     const panels = Array.from(document.querySelectorAll('.panel'));
@@ -252,8 +261,21 @@
        - Reduced-motion users get plain native scrolling; this
          controller does nothing for them. */
   function setupSectionPaging() {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) return;
+    // Mobile/touch devices rely on plain native scrolling instead of
+    // this controller. This controller measures each section's
+    // height once up front and clamps how far a wheel/touch delta is
+    // allowed to scroll within it. That's fine on desktop, where
+    // viewports are tall enough that async content (e.g. the GitHub
+    // graph, which loads after a network fetch) rarely pushes a
+    // section taller than the stale measurement. On short mobile
+    // viewports it isn't: sections like Projects, GitHub, and Contact
+    // are routinely taller than one screen, so once content finishes
+    // loading after the initial measurement, the extra height becomes
+    // unreachable — the user can't scroll far enough to see the rest
+    // of the projects, the full contribution graph, or the contact
+    // photo. Native scrolling has no such cache to go stale, so it
+    // always reaches exactly as far as the real content requires.
+    if (pagingDisabled()) return;
 
     const panels = Array.from(document.querySelectorAll('.panel'));
     const navbar = document.querySelector('.navbar');
