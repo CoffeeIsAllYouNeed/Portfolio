@@ -1060,29 +1060,3 @@ img{max-width:100%;display:block;}
   *{transition-duration:.001ms !important;}
   .panel{transform:none !important;filter:none !important;}
 }
-
-/* ============ MOBILE SECTION SNAP ============
-   Touch devices skip the JS scroll-jacking controller (see
-   pagingDisabled()/setupSectionPaging() in script.js) and get plain
-   native scrolling instead, because that controller measures each
-   section's height once up front and mobile content (GitHub graph,
-   images) can grow taller than that stale measurement after load.
-   Without anything else, that plain native scroll lets one flick
-   fling straight through several full-height panels at once, since
-   nothing arrests the momentum at each section boundary.
-   scroll-snap fixes that natively, without caching any height: each
-   panel is still measured live by the browser on every scroll, so it
-   can't go stale the way the JS controller did. scroll-snap-stop:
-   always is the important part — it forces the browser to stop at
-   every panel even mid-fling, instead of only snapping once existing
-   momentum has already run out several panels later. */
-@media (hover:none) and (pointer:coarse){
-  html{
-    scroll-snap-type:y mandatory;
-    scroll-padding-top:var(--nav-h);
-  }
-  .panel{
-    scroll-snap-align:start;
-    scroll-snap-stop:always;
-  }
-}
