@@ -190,13 +190,14 @@
      instantly, back to the old panel's — which is what caused the
      navbar to appear stuck/delayed instead of switching the moment
      a new page arrived. */
-  /* Touch/mobile devices skip the custom scroll-jacking paging system
-     below (see setupSectionPaging for why) and get plain native
-     scrolling instead — same as prefers-reduced-motion users. Shared
-     by both functions so they always agree on which mode is active. */
+  /* Only prefers-reduced-motion users skip the custom scroll-jacking
+     paging system below and get plain native scrolling instead. Touch/
+     mobile devices now run the same paging controller as desktop (see
+     setupSectionPaging), so a single scroll/swipe overlaps exactly one
+     page at a time on every device. Shared by both functions so they
+     always agree on which mode is active. */
   function pagingDisabled() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-           window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   function setupNavbarTheme() {
@@ -261,20 +262,17 @@
        - Reduced-motion users get plain native scrolling; this
          controller does nothing for them. */
   function setupSectionPaging() {
-    // Mobile/touch devices rely on plain native scrolling instead of
-    // this controller. This controller measures each section's
-    // height once up front and clamps how far a wheel/touch delta is
-    // allowed to scroll within it. That's fine on desktop, where
-    // viewports are tall enough that async content (e.g. the GitHub
-    // graph, which loads after a network fetch) rarely pushes a
-    // section taller than the stale measurement. On short mobile
-    // viewports it isn't: sections like Projects, GitHub, and Contact
-    // are routinely taller than one screen, so once content finishes
-    // loading after the initial measurement, the extra height becomes
-    // unreachable — the user can't scroll far enough to see the rest
-    // of the projects, the full contribution graph, or the contact
-    // photo. Native scrolling has no such cache to go stale, so it
-    // always reaches exactly as far as the real content requires.
+    // This controller measures each section's height once up front
+    // and clamps how far a wheel/touch delta is allowed to scroll
+    // within it. Async content (the GitHub graph and the experience/
+    // project cards, both of which load after a network fetch) can
+    // push a section taller than that initial measurement — on short
+    // mobile viewports especially, sections like Projects, GitHub,
+    // and Contact are routinely taller than one screen, so extra
+    // height added after the fact would otherwise become unreachable.
+    // remeasure() is exposed so those async loaders can re-run
+    // measure() the moment their content lands, keeping every stop's
+    // bounds accurate instead of relying on a stale snapshot.
     if (pagingDisabled()) return;
 
     const panels = Array.from(document.querySelectorAll('.panel'));
@@ -318,6 +316,20 @@
     measure();
     window.addEventListener('resize', measure);
     window.addEventListener('load', measure);
+
+    // Re-measure without losing the user's place: keep the currently
+    // active panel active (recomputing only its bounds/top), rather
+    // than re-deriving idx from scrollY, since a stop's height can
+    // change out from under the user while they're already on it.
+    function remeasure() {
+      const activePanel = stops[idx] && stops[idx].panel;
+      measure();
+      if (activePanel) {
+        const newIdx = stops.findIndex(s => s.panel === activePanel);
+        if (newIdx !== -1) idx = newIdx;
+      }
+    }
+    window.__portfolioRemeasurePaging = remeasure;
 
     function boundsFor(i) {
       const s = stops[i];
@@ -547,6 +559,12 @@
       })
       .catch(() => {
         if (totalEl) totalEl.textContent = 'Contribution graph unavailable right now.';
+      })
+      .finally(() => {
+        // The graph's real height (SVG or the fallback message) only
+        // exists after this resolves — let the paging controller know
+        // its cached section heights may now be stale.
+        if (window.__portfolioRemeasurePaging) window.__portfolioRemeasurePaging();
       });
   }
 
@@ -624,6 +642,10 @@
 
       // New slides may have been added to the tracks — reinitialize.
       setupAllSliders();
+
+      // The experience/project/awards panels may now be taller than
+      // they were at the paging controller's initial measurement.
+      if (window.__portfolioRemeasurePaging) window.__portfolioRemeasurePaging();
     })
     .catch(() => { /* content.json missing/unreachable — site still works with static content */ });
 })();
