@@ -19,18 +19,10 @@
   --radius-full:999px;
   --max:1180px;
   --nav-h:64px;
-  /* Tune this between 0 and 1 to test different GitHub block widths —
-     0 = collapsed, 1 = full section width (consumes almost the entire screen). */
   --github-width-scale:0.85;
 }
 
 *{box-sizing:border-box;}
-/* Section-to-section paging (snap-like behavior) is handled in JS
-   (setupSectionPaging in script.js) rather than native CSS scroll-
-   snap — combined with the sticky/stacked panels below, native snap
-   produced unreliable "scroll up" behavior. The JS controller
-   animates a fast, eased scroll to each panel boundary and keeps the
-   navbar theme in lockstep with it. */
 html{
   scroll-behavior:auto;
 }
@@ -172,18 +164,27 @@ img{max-width:100%;display:block;}
 .section-heading .accent-word{color:var(--panel-heading, var(--accent));}
 
 /* ============ PROJECTS (Proof of Work — image cards) ============ */
-#projects .section-inner{max-width:10000px;}
+#projects.section{
+  padding-left:40px;
+  padding-right:40px;
+}
+#projects .section-inner{
+  max-width:none !important;
+  width:100% !important;
+  margin:0 !important;
+}
 .project-grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:32px;
+  gap:40px;
   width:100%;
   margin:40px auto 0;
 }
 .project-card{
   position:relative;
   display:block;
-  aspect-ratio:1/1;
+  aspect-ratio:16/11;
+  min-height:min(70vh, 640px);
   border-radius:var(--radius-lg);
   overflow:hidden;
   background:#050505;
@@ -226,7 +227,7 @@ img{max-width:100%;display:block;}
 .project-card-cta svg{flex:none;width:16px;height:16px;}
 @media (max-width:700px){
   .project-grid{grid-template-columns:1fr;gap:20px;margin-top:24px;}
-  .project-card{aspect-ratio:4/3;}
+  .project-card{aspect-ratio:4/3;min-height:auto;}
   .project-card-body{padding:24px 22px 26px;}
   .project-card-title{font-size:1.6rem;}
 }
@@ -402,7 +403,6 @@ img{max-width:100%;display:block;}
 }
 
 #experience.section, #experience-2.section{padding:calc(var(--nav-h) + 24px) 32px 60px;}
-#projects.section{padding:calc(var(--nav-h) + 24px) 32px 40px;}
 #experience .section-heading, #experience-2 .section-heading{margin-bottom:16px;}
 
 .exp-spotlight{
@@ -922,22 +922,6 @@ img{max-width:100%;display:block;}
   .contact-resume-btn{justify-content:center;width:100%;}
   .contact-icons-row{justify-content:center;}
   .contact-availability{margin-top:28px;}
-}
-
-/* ============ PROJECTS — MOBILE FULL-BLEED FIX ============
-   #projects.section has 32px side padding at every width because it
-   isn't scoped inside a media query. On mobile this was eating the
-   horizontal space the card should fill. This override zeroes that
-   side padding under 700px and lets .project-grid own a smaller,
-   optional inset instead. */
-@media (max-width:700px){
-  #projects.section{
-    padding-left:0;
-    padding-right:0;
-  }
-  .project-grid{
-    padding:0 16px; /* remove this line entirely for true edge-to-edge */
-  }
 }
 
 /* Respect reduced motion */
