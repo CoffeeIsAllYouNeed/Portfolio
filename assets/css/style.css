@@ -222,17 +222,18 @@ img{max-width:100%;display:block;}
    the image behind a bottom gradient scrim — rather than the old
    pattern of one project per full-screen page with a square thumb
    above separate text. */
+#projects .section-inner{max-width:1400px;}
 .project-grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:28px;
+  gap:32px;
   width:100%;
   margin:40px auto 0;
 }
 .project-card{
   position:relative;
   display:block;
-  aspect-ratio:4/3;
+  aspect-ratio:1/1;
   border-radius:var(--radius-lg);
   overflow:hidden;
   background:#050505;
