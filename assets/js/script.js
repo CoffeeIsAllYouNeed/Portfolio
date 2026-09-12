@@ -422,11 +422,54 @@
       requestAnimationFrame(step);
     }
 
+    // ============ BACKWARD (scroll-up) SLIDE-COVER ============
+    // bringToFront() alone is enough to decide *which* panel wins
+    // the z-index fight, but it doesn't explain why forward jumps
+    // already look like a slide: going down, the incoming panel
+    // hasn't reached its sticky threshold yet, so it's still sitting
+    // in normal flow just below the viewport, and it visibly travels
+    // up into place as the scroll animates.
+    // Going up is different. The panel we're returning to already
+    // passed its own sticky threshold earlier, so it's already
+    // pinned full-screen — it never left, it was just hidden behind
+    // the (higher default z-index) panel on top of it. Simply
+    // re-elevating its z-index the with bringToFront() above makes
+    // it snap into view instantly instead of sliding, since it
+    // doesn't need to move at all to be "in place".
+    // To get a matching slide (this time from the top, since we're
+    // covering the panel below with the one above it), we give the
+    // panel a one-off transform: push it up out of view with
+    // translateY(-100%) with no transition, force the browser to
+    // register that starting point, then transition it back to
+    // translateY(0) over the same span as the scroll animation. The
+    // inline transform/transition are cleared once it settles, so
+    // sticky positioning handles everything again afterward.
+    function slideCoverIn(panel) {
+      window.clearTimeout(panel.__coverCleanupTimer);
+      panel.style.transition = 'none';
+      panel.style.transform = 'translateY(-100%)';
+      // Force a reflow so the browser paints the off-screen starting
+      // position before the transition below is applied — otherwise
+      // the two style writes can be coalesced into one and the slide
+      // never happens.
+      void panel.offsetHeight;
+      panel.style.transition = `transform ${DURATION}ms cubic-bezier(.65,0,.35,1)`;
+      requestAnimationFrame(() => {
+        panel.style.transform = 'translateY(0)';
+      });
+      panel.__coverCleanupTimer = window.setTimeout(() => {
+        panel.style.transition = '';
+        panel.style.transform = '';
+      }, DURATION + 60);
+    }
+
     function goTo(newIdx) {
       newIdx = Math.max(0, Math.min(stops.length - 1, newIdx));
+      const isBackward = newIdx < idx;
       idx = newIdx;
       applyTheme(stops[idx].panel);
       bringToFront(stops[idx].panel);
+      if (isBackward) slideCoverIn(stops[idx].panel);
       animateTo(stops[idx].top);
       cooldownUntil = performance.now() + COOLDOWN;
     }
