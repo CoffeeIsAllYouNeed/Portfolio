@@ -347,6 +347,29 @@
       }
     }
 
+    // ============ DIRECTION-AWARE COVER EFFECT ============
+    // The CSS gives every panel a static z-index (--i, in DOM order),
+    // so by default only a *forward* (scroll-down) transition looks
+    // like the incoming panel sliding up and covering the outgoing
+    // one — the later panel always paints on top of the earlier one.
+    // Scrolling back up, that same fixed ordering means the earlier
+    // panel can never paint above the later one, so instead of being
+    // covered, the later panel just slides away and un-covers it —
+    // a different, asymmetric effect.
+    // To make "cover the previous page" work in both directions, we
+    // bring whichever panel we're navigating TO to the front of the
+    // stack every time we land on it, using an ever-increasing
+    // counter (like a z-index freelist / LIFO). That panel's inline
+    // style then beats the CSS var(--i) rule, so the panel you're
+    // moving toward is always the topmost one and visibly slides
+    // over whatever was on screen before — regardless of whether
+    // you're paging down or up.
+    let zTop = panels.length + 1;
+    function bringToFront(panel) {
+      zTop += 1;
+      panel.style.zIndex = zTop;
+    }
+
     // Track the active stop ourselves instead of re-deriving it from
     // scroll position each time — keeps goTo()/handleDelta() in sync
     // even mid-animation, when scrollY is only a snapshot of an
@@ -358,6 +381,7 @@
         if (y >= stops[i].top - 2) idx = i;
       }
       applyTheme(stops[idx].panel);
+      bringToFront(stops[idx].panel);
     })();
 
     let isAnimating = false;
@@ -402,6 +426,7 @@
       newIdx = Math.max(0, Math.min(stops.length - 1, newIdx));
       idx = newIdx;
       applyTheme(stops[idx].panel);
+      bringToFront(stops[idx].panel);
       animateTo(stops[idx].top);
       cooldownUntil = performance.now() + COOLDOWN;
     }
