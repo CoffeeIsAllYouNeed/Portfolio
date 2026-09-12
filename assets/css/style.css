@@ -174,6 +174,12 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--black));
 }
 .quote-text span{display:block;}
+/* "AI Engineer" / "right place" called out in the site's red accent
+   (matches .theme-red's panel bg / .theme-dark's panel heading) so
+   they read as the emphasized phrase against the surrounding white
+   quote text. The inner accent-word span stays inline so it doesn't
+   force its own line break inside the (block) line span above. */
+.quote-text .accent-word{display:inline;color:var(--panel-heading, #e7223a);}
 
 
 /* ============ SECTION SHELL ============ */
