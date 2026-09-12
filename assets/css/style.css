@@ -183,7 +183,7 @@ img{max-width:100%;display:block;}
 .project-card{
   position:relative;
   display:block;
-  aspect-ratio:16/11;
+  aspect-ratio:1/1;
   min-height:min(70vh, 640px);
   border-radius:var(--radius-lg);
   overflow:hidden;
