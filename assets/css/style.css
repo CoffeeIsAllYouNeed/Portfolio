@@ -216,51 +216,66 @@ img{max-width:100%;display:block;}
 }
 .section-heading .accent-word{color:var(--panel-heading, var(--accent));}
 
-/* ============ PROJECTS (one project per full panel) ============
-   Same "spotlight" pattern as Work Experience (see .exp-spotlight
-   below): each project gets its own full-screen panel, so the next
-   one covers the previous on scroll instead of both competing for
-   space inside a single sticky panel. Both project panels share the
-   same theme-dark class in the HTML, so paging between them never
-   changes the color scheme — only the content swaps. */
-.project-spotlight{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  gap:8px;
-  max-width:400px;
+/* ============ PROJECTS (Proof of Work — image cards) ============
+   Both projects now live in one section as a row of cards, each a
+   full-bleed photo with the label/title/link baked directly onto
+   the image behind a bottom gradient scrim — rather than the old
+   pattern of one project per full-screen page with a square thumb
+   above separate text. */
+.project-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:20px;
+  max-width:900px;
   margin:32px auto 0;
 }
-.project-spotlight .project-thumb{margin-bottom:0;}
-.project-thumb{
+.project-card{
+  position:relative;
   display:block;
-  width:100%;
-  aspect-ratio:1/1;
+  aspect-ratio:3/4;
   border-radius:var(--radius-lg);
   overflow:hidden;
   background:#050505;
-  margin-bottom:16px;
+  isolation:isolate;
 }
-.project-thumb img{
+.project-card-img{
+  position:absolute;inset:0;
   width:100%;height:100%;object-fit:cover;display:block;
-  transition:transform .4s cubic-bezier(.25,.8,.25,1);
+  transition:transform .5s cubic-bezier(.25,.8,.25,1);
 }
-.project-thumb:hover img{transform:scale(1.05);}
-.project-title{
+.project-card:hover .project-card-img{transform:scale(1.06);}
+.project-card-scrim{
+  position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 30%, rgba(0,0,0,0) 62%);
+  pointer-events:none;
+}
+.project-card-body{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:20px 20px 22px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.project-card-tag{
+  font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  color:#e7223a;
+}
+.project-card-title{
   margin:0;
-  font-size:1.5rem;font-weight:800;
-  color:var(--panel-heading, var(--white));
-  font-family:'Playfair Display', Georgia, serif;
+  font-size:1.3rem;font-weight:700;line-height:1.2;
+  color:#ffffff;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
-.project-subtitle{
-  margin:4px 0 0;
-  font-size:.95rem;
-  color:var(--panel-body, var(--text-muted));
-  
+.project-card-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:6px;
+  font-size:.85rem;font-weight:600;
+  color:#ffffff;opacity:.85;
+  transition:opacity .2s ease, gap .2s ease;
 }
+.project-card:hover .project-card-cta{opacity:1;gap:9px;}
+.project-card-cta svg{flex:none;}
 @media (max-width:700px){
-  .project-spotlight{gap:6px;margin-top:20px;}
+  .project-grid{grid-template-columns:1fr;gap:16px;max-width:420px;margin-top:20px;}
+  .project-card{aspect-ratio:4/5;}
 }
 
 /* ============ WORK SLIDER (Experience, Research & Small Wins) ============ */
@@ -454,7 +469,7 @@ img{max-width:100%;display:block;}
    sections — keeps both entries reachable within a scroll or two
    instead of ballooning the panel height. */
 #experience.section, #experience-2.section{padding:calc(var(--nav-h) + 24px) 32px 60px;}
-#projects.section, #projects-2.section{padding:calc(var(--nav-h) + 24px) 32px 40px;}
+#projects.section{padding:calc(var(--nav-h) + 24px) 32px 40px;}
 #experience .section-heading, #experience-2 .section-heading{margin-bottom:16px;}
 
 /* Each internship now gets its own full panel (spotlight), so the
