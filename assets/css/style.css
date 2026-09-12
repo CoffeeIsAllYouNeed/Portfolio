@@ -47,15 +47,6 @@ body{
   line-height:1.5;
   cursor:url("../images/cursor-arrow.svg") 22 6, auto;
 }
-/* Custom cursor is set once on <body> and inherits everywhere by
-   default (cursor is an inherited property). The one place that
-   silently breaks this is <a> — browsers apply `cursor: pointer`
-   to links directly via their own UA stylesheet, which (being a
-   real declaration on the element, not inheritance) overrides our
-   inherited value regardless of specificity. The `a{cursor:inherit}`
-   rule below puts the custom cursor back on every link, including
-   the ones wrapping thumbnail images. Everything else below is left
-   alone on purpose, since nothing else re-declares `cursor`. */
 a{color:inherit;text-decoration:none;cursor:inherit;}
 ul{margin:0;padding:0;list-style:none;}
 img{max-width:100%;display:block;}
@@ -68,23 +59,13 @@ img{max-width:100%;display:block;}
   border-radius:4px;
 }
 
-/* subtle grain so pure black doesn't look flat/banded */
 .noise-overlay{
   position:fixed;inset:0;pointer-events:none;z-index:999;
   opacity:.025;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ============ NAVBAR ============
-   Themed the same way as the scroll-stacked panels below: JS keeps
-   exactly one theme-* class on .navbar, matching whichever panel is
-   currently on top, so --panel-bg / --panel-heading resolve here
-   too and the bar always blends with the section behind it. A short
-   transition on background/color makes that swap read as a quick
-   crossfade instead of a hard cut, while still landing in lockstep
-   with the section change (see setupSectionPaging in script.js,
-   which applies the new theme class the instant a page-jump starts,
-   not after the scroll finishes). */
+/* ============ NAVBAR ============ */
 .navbar{
   position:fixed;top:0;left:0;right:0;
   z-index:1000;
@@ -106,23 +87,11 @@ img{max-width:100%;display:block;}
   color:var(--panel-heading, var(--black));
   transition:transform .2s ease;
 }
-/* Hover only ever scales the link — color is intentionally left out
-   of this rule (and out of the transition above) so it can never
-   shift on hover, regardless of which panel theme is active. */
 .nav-link:hover{transform:scale(1.12);}
 
-/* Landing page (red navbar) always reads in black — better contrast
-   against red than the white used for headings elsewhere on that
-   panel. Scoped to the navbar only, so it doesn't touch section
-   headings that also use the red theme. */
 .navbar.theme-red .nav-link{color:var(--black);}
 
-/* ============ HERO ============
-   Single centered element: the name fills nearly the entire
-   viewport. font-size is a clamp() driven mostly by viewport width
-   (18vw) so "Vrushal More." scales up to occupy almost all the
-   available space at any screen size, capped so it never overflows
-   on very wide screens. */
+/* ============ HERO ============ */
 .hero{
   min-height:100svh;
   display:flex;
@@ -150,11 +119,7 @@ img{max-width:100%;display:block;}
   color:var(--panel-heading, var(--white));
 }
 
-/* ============ QUOTE ============
-   Same treatment as the hero name: a single, huge, centered
-   statement that fills almost the entire viewport, split across two
-   lines so it reads as a big deliberate statement rather than a
-   caption. */
+/* ============ QUOTE ============ */
 .quote-section{
   min-height:100svh;
   padding:32px 24px;
@@ -174,11 +139,6 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--black));
 }
 .quote-text span{display:block;}
-/* "AI Engineer" / "right place" called out in the site's red accent
-   (matches .theme-red's panel bg / .theme-dark's panel heading) so
-   they read as the emphasized phrase against the surrounding white
-   quote text. The inner accent-word span stays inline so it doesn't
-   force its own line break inside the (block) line span above. */
 .quote-text .accent-word{display:inline;color:var(--panel-heading, #e7223a);}
 
 
@@ -203,11 +163,6 @@ img{max-width:100%;display:block;}
 .section-heading{
   font-family:'Playfair Display',Georgia,serif;
   font-weight:700;
-  /* Previously matched 1:1 to .quote-text (clamp(2.5rem,9vw,8rem)) —
-     that scale only works for the quote's standalone full-viewport
-     statement. Section headers sit above cards/grids and need to
-     read as a header, not fill the screen, so this is scaled down
-     independently. */
   font-size:clamp(2rem, 4.5vw, 3.75rem);
   line-height:1.15;
   text-align:center;
@@ -216,12 +171,7 @@ img{max-width:100%;display:block;}
 }
 .section-heading .accent-word{color:var(--panel-heading, var(--accent));}
 
-/* ============ PROJECTS (Proof of Work — image cards) ============
-   Both projects now live in one section as a row of cards, each a
-   full-bleed photo with the label/title/link baked directly onto
-   the image behind a bottom gradient scrim — rather than the old
-   pattern of one project per full-screen page with a square thumb
-   above separate text. */
+/* ============ PROJECTS (Proof of Work — image cards) ============ */
 #projects .section-inner{max-width:10000px;}
 .project-grid{
   display:grid;
@@ -304,8 +254,6 @@ img{max-width:100%;display:block;}
   gap:16px;
   width:100%;
   max-width:640px;
-  /* Contained "block" treatment (bordered panel around thumb + copy),
-     matching the boxed card style referenced from the moodboard. */
   border:1.5px solid var(--panel-body, var(--border));
   border-radius:var(--radius-xl);
   padding:16px;
@@ -322,9 +270,6 @@ img{max-width:100%;display:block;}
   transition:transform .3s ease;
 }
 .work-card:hover .work-thumb{transform:scale(1.03);}
-/* Small Wins: square thumbs with a generous rounded corner, instead
-   of the 16:10 crop used elsewhere. Scoped to #awards only — the
-   only section still using .work-thumb. */
 #awards .work-thumb{aspect-ratio:1/1;border-radius:var(--radius-xl);}
 .work-thumb img{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
@@ -358,9 +303,6 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--text-muted));
 }
 
-/* Research: same slider pattern as Projects/Small Wins, scaled down.
-   Capped at 1.875rem (30px) so it sits inside the H2 band (24-30px)
-   instead of drifting into H1 territory at wide viewports. */
 .work-wrap-sm .work-sticky{padding:56px 32px;}
 .work-wrap-sm .section-heading{
   margin-bottom:32px;
@@ -371,8 +313,6 @@ img{max-width:100%;display:block;}
 .work-wrap-sm.has-slider .work-slide{width:min(400px, 78vw);}
 .work-wrap-sm.has-slider .work-track{gap:24px;}
 
-/* Body/description copy — nudged from 12.8px to 14px so it reads as
-   supporting body text rather than dropping into caption range. */
 .work-desc{
   margin:-2px 0 0;
   font-size:.875rem;
@@ -380,7 +320,6 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--text-muted));
 }
 
-/* Tags were rendering below the 12px caption floor; bumped to 12px. */
 .status-tag{
   display:inline-block;
   align-self:flex-start;
@@ -395,12 +334,7 @@ img{max-width:100%;display:block;}
   background:rgba(128,128,128,.14);
 }
 
-/* ============ RESEARCH CARD (image-left / info-right block) ============
-   Same .work-card shell (border, radius, slider mechanics) as
-   Projects/Small Wins, but laid out as a horizontal block — media on
-   one side, copy + a monospace meta row (Status/Type) on the other,
-   with a small accent square in the corner. Scoped to #research so
-   Projects/Experience/Small Wins are untouched. */
+/* ============ RESEARCH CARD (image-left / info-right block) ============ */
 #research .research-card{
   flex-direction:row;
   align-items:stretch;
@@ -467,17 +401,10 @@ img{max-width:100%;display:block;}
   .research-card-body{padding:22px 20px 44px;}
 }
 
-/* Experience section runs long (road + two detailed entries), so it
-   gets tighter outer padding and a smaller heading gap than other
-   sections — keeps both entries reachable within a scroll or two
-   instead of ballooning the panel height. */
 #experience.section, #experience-2.section{padding:calc(var(--nav-h) + 24px) 32px 60px;}
 #projects.section{padding:calc(var(--nav-h) + 24px) 32px 40px;}
 #experience .section-heading, #experience-2 .section-heading{margin-bottom:16px;}
 
-/* Each internship now gets its own full panel (spotlight), so the
-   next one covers the previous on scroll instead of two entries
-   competing for space inside one sticky panel. */
 .exp-spotlight{
   display:flex;
   flex-direction:column;
@@ -495,15 +422,7 @@ img{max-width:100%;display:block;}
   .exp-spotlight .exp-node{width:130px;height:130px;border-width:6px;}
 }
 
-/* ============ WORK EXPERIENCE (winding road timeline) ============
-   A single road curves down through each role, bending toward
-   whichever side that entry's logo sits on — the same "journey"
-   infographic pattern as a roadmap graphic, just recolored into the
-   site's red/black/white palette with real org logos standing in for
-   plain numbers. The curve itself is drawn by JS (setupExpRoad in
-   script.js), which measures each .exp-node's real on-screen center
-   and stitches a smooth SVG path through them, so it stays correct
-   at any number of entries, any viewport, and any text length. */
+/* ============ WORK EXPERIENCE (winding road timeline) ============ */
 .exp-road{
   position:relative;
   padding:24px 0 8px;
@@ -536,13 +455,6 @@ img{max-width:100%;display:block;}
   align-items:center;
   column-gap:32px;
   padding:24px 0;
-  /* Tall enough that one entry roughly fills the section's available
-     viewport space on its own. setupSectionPaging() in script.js
-     treats each .exp-item as its own scroll "stop", the same way it
-     already pages between top-level sections — so scrolling snaps
-     cleanly from one entry straight to the next instead of leaving
-     both partway visible at once. The road (drawn in JS from each
-     node's real position) stretches to match automatically. */
   min-height:calc(100svh - 200px);
 }
 .exp-item-a .exp-card{grid-column:1;display:flex;justify-content:flex-end;}
@@ -660,8 +572,6 @@ img{max-width:100%;display:block;}
 .work-dot:hover{transform:scale(1.4);}
 .work-dot.active{background:var(--white);transform:scale(1.3);}
 
-/* Once JS confirms the slider is running, pin the section and let
-   scroll position drive horizontal movement through the track. */
 .work-wrap.has-slider .work-sticky{
   position:sticky;top:var(--nav-h);
   height:calc(100vh - var(--nav-h));
@@ -769,13 +679,7 @@ img{max-width:100%;display:block;}
   display:inline-block;
 }
 
-/* ============ TESTIMONIALS ============
-   Static 4-up grid (no slider) of bordered cards, following the
-   same --panel-body/--panel-heading theme vars as everything else
-   so the section slots into the red/dark alternation automatically.
-   Card fill is a translucent overlay (same recipe as .work-card)
-   rather than a hardcoded color, so it reads correctly on either
-   theme without a separate dark/red variant. */
+/* ============ TESTIMONIALS ============ */
 .testimonials-section{min-height:100svh;}
 .testimonial-grid{
   display:grid;
@@ -974,22 +878,7 @@ img{max-width:100%;display:block;}
 .code-str{color:#98c379;}
 
 
-/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============
-   Every top-level "page" is pinned with position:sticky at the
-   top of the viewport. Because later elements in normal document
-   flow paint above earlier ones, each new page glides up from the
-   bottom of the screen and settles directly on top of the page
-   before it — a flat, full-bleed cutover with no gap, no rounding,
-   no shadow. z-index is set explicitly (via --i, in DOM order) so
-   the stacking order is unambiguous. */
-/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============
-   Every top-level "page" is pinned with position:sticky at the
-   top of the viewport. Because later elements in normal document
-   flow paint above earlier ones, each new page glides up from the
-   bottom of the screen and settles directly on top of the page
-   before it — a flat, full-bleed cutover with no gap, no rounding,
-   no shadow. z-index is set explicitly (via --i, in DOM order) so
-   the stacking order is unambiguous. */
+/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============ */
 .panel{
   position:sticky;
   top:0;
@@ -997,14 +886,7 @@ img{max-width:100%;display:block;}
   background:var(--panel-bg, var(--bg));
 }
 
-/* ============ PER-PAGE COLOR THEMES ============
-   Every page alternates between just two palettes as you scroll:
-   red bg / white heading / black body text, then black bg / red
-   heading / white body text — no white-background pages.
-   --panel-heading drives each page's big title (.hero-name,
-   .section-heading, .contact-heading, .quote-text via --panel-body);
-   --panel-body drives its supporting text (descriptions, labels,
-   tags). */
+/* ============ PER-PAGE COLOR THEMES ============ */
 .theme-red{
   --panel-bg:#e7223a;
   --panel-heading:#ffffff;
@@ -1040,6 +922,22 @@ img{max-width:100%;display:block;}
   .contact-resume-btn{justify-content:center;width:100%;}
   .contact-icons-row{justify-content:center;}
   .contact-availability{margin-top:28px;}
+}
+
+/* ============ PROJECTS — MOBILE FULL-BLEED FIX ============
+   #projects.section has 32px side padding at every width because it
+   isn't scoped inside a media query. On mobile this was eating the
+   horizontal space the card should fill. This override zeroes that
+   side padding under 700px and lets .project-grid own a smaller,
+   optional inset instead. */
+@media (max-width:700px){
+  #projects.section{
+    padding-left:0;
+    padding-right:0;
+  }
+  .project-grid{
+    padding:0 16px; /* remove this line entirely for true edge-to-edge */
+  }
 }
 
 /* Respect reduced motion */
