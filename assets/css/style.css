@@ -19,10 +19,18 @@
   --radius-full:999px;
   --max:1180px;
   --nav-h:64px;
+  /* Tune this between 0 and 1 to test different GitHub block widths —
+     0 = collapsed, 1 = full section width (consumes almost the entire screen). */
   --github-width-scale:0.85;
 }
 
 *{box-sizing:border-box;}
+/* Section-to-section paging (snap-like behavior) is handled in JS
+   (setupSectionPaging in script.js) rather than native CSS scroll-
+   snap — combined with the sticky/stacked panels below, native snap
+   produced unreliable "scroll up" behavior. The JS controller
+   animates a fast, eased scroll to each panel boundary and keeps the
+   navbar theme in lockstep with it. */
 html{
   scroll-behavior:auto;
 }
@@ -39,6 +47,15 @@ body{
   line-height:1.5;
   cursor:url("../images/cursor-arrow.svg") 22 6, auto;
 }
+/* Custom cursor is set once on <body> and inherits everywhere by
+   default (cursor is an inherited property). The one place that
+   silently breaks this is <a> — browsers apply `cursor: pointer`
+   to links directly via their own UA stylesheet, which (being a
+   real declaration on the element, not inheritance) overrides our
+   inherited value regardless of specificity. The `a{cursor:inherit}`
+   rule below puts the custom cursor back on every link, including
+   the ones wrapping thumbnail images. Everything else below is left
+   alone on purpose, since nothing else re-declares `cursor`. */
 a{color:inherit;text-decoration:none;cursor:inherit;}
 ul{margin:0;padding:0;list-style:none;}
 img{max-width:100%;display:block;}
@@ -51,13 +68,23 @@ img{max-width:100%;display:block;}
   border-radius:4px;
 }
 
+/* subtle grain so pure black doesn't look flat/banded */
 .noise-overlay{
   position:fixed;inset:0;pointer-events:none;z-index:999;
   opacity:.025;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* ============ NAVBAR ============ */
+/* ============ NAVBAR ============
+   Themed the same way as the scroll-stacked panels below: JS keeps
+   exactly one theme-* class on .navbar, matching whichever panel is
+   currently on top, so --panel-bg / --panel-heading resolve here
+   too and the bar always blends with the section behind it. A short
+   transition on background/color makes that swap read as a quick
+   crossfade instead of a hard cut, while still landing in lockstep
+   with the section change (see setupSectionPaging in script.js,
+   which applies the new theme class the instant a page-jump starts,
+   not after the scroll finishes). */
 .navbar{
   position:fixed;top:0;left:0;right:0;
   z-index:1000;
@@ -79,11 +106,23 @@ img{max-width:100%;display:block;}
   color:var(--panel-heading, var(--black));
   transition:transform .2s ease;
 }
+/* Hover only ever scales the link — color is intentionally left out
+   of this rule (and out of the transition above) so it can never
+   shift on hover, regardless of which panel theme is active. */
 .nav-link:hover{transform:scale(1.12);}
 
+/* Landing page (red navbar) always reads in black — better contrast
+   against red than the white used for headings elsewhere on that
+   panel. Scoped to the navbar only, so it doesn't touch section
+   headings that also use the red theme. */
 .navbar.theme-red .nav-link{color:var(--black);}
 
-/* ============ HERO ============ */
+/* ============ HERO ============
+   Single centered element: the name fills nearly the entire
+   viewport. font-size is a clamp() driven mostly by viewport width
+   (18vw) so "Vrushal More." scales up to occupy almost all the
+   available space at any screen size, capped so it never overflows
+   on very wide screens. */
 .hero{
   min-height:100svh;
   display:flex;
@@ -111,7 +150,11 @@ img{max-width:100%;display:block;}
   color:var(--panel-heading, var(--white));
 }
 
-/* ============ QUOTE ============ */
+/* ============ QUOTE ============
+   Same treatment as the hero name: a single, huge, centered
+   statement that fills almost the entire viewport, split across two
+   lines so it reads as a big deliberate statement rather than a
+   caption. */
 .quote-section{
   min-height:100svh;
   padding:32px 24px;
@@ -126,12 +169,12 @@ img{max-width:100%;display:block;}
   font-family:'Playfair Display',Georgia,serif;
   font-style:italic;
   font-weight:700;
-  font-size:clamp(1.6rem, 5vw, 4.8rem);
+  font-size:clamp(1.8rem, 5.5vw, 4.5rem);
   line-height:1.15;
   color:var(--panel-body, var(--black));
 }
 .quote-text span{display:block;}
-.quote-text .accent-word{display:inline;color:var(--panel-heading, #e7223a);}
+.quote-text .accent-word{color:#e7223a;}
 
 
 /* ============ SECTION SHELL ============ */
@@ -155,6 +198,11 @@ img{max-width:100%;display:block;}
 .section-heading{
   font-family:'Playfair Display',Georgia,serif;
   font-weight:700;
+  /* Previously matched 1:1 to .quote-text (clamp(2.5rem,9vw,8rem)) —
+     that scale only works for the quote's standalone full-viewport
+     statement. Section headers sit above cards/grids and need to
+     read as a header, not fill the screen, so this is scaled down
+     independently. */
   font-size:clamp(2rem, 4.5vw, 3.75rem);
   line-height:1.15;
   text-align:center;
@@ -176,8 +224,9 @@ img{max-width:100%;display:block;}
 .project-grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:40px;
+  gap:24px;
   width:100%;
+  max-width:1044px;
   margin:40px auto 0;
 }
 .project-card{
@@ -185,7 +234,7 @@ img{max-width:100%;display:block;}
   display:block;
   width:100%;
   height:0;
-  padding-bottom:100%;   /* this forces height = width, always */
+  padding-bottom:100%;   /* square card */
   border-radius:var(--radius-lg);
   overflow:hidden;
   background:#050505;
@@ -204,33 +253,36 @@ img{max-width:100%;display:block;}
 }
 .project-card-body{
   position:absolute;left:0;right:0;bottom:0;
-  padding:32px 32px 34px;
-  display:flex;flex-direction:column;gap:10px;
+  padding:20px 20px 22px;
+  display:flex;flex-direction:column;gap:6px;
 }
 .project-card-tag{
-  font-size:.85rem;font-weight:700;letter-spacing:.04em;
+  font-size:.72rem;font-weight:700;letter-spacing:.04em;
   color:#e7223a;
 }
 .project-card-title{
   margin:0;
-  font-size:2.1rem;font-weight:700;line-height:1.15;
+  font-size:1.35rem;font-weight:700;line-height:1.2;
   color:#ffffff;
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 .project-card-cta{
   display:inline-flex;align-items:center;gap:6px;
-  margin-top:8px;
-  font-size:.95rem;font-weight:600;
+  margin-top:4px;
+  font-size:.82rem;font-weight:600;
   color:#ffffff;opacity:.85;
   transition:opacity .2s ease, gap .2s ease;
 }
 .project-card:hover .project-card-cta{opacity:1;gap:9px;}
-.project-card-cta svg{flex:none;width:16px;height:16px;}
+.project-card-cta svg{flex:none;width:14px;height:14px;}
+@media (max-width:900px){
+  .project-grid{max-width:650px;}
+}
 @media (max-width:700px){
-  .project-grid{grid-template-columns:1fr;gap:20px;margin-top:24px;}
-  .project-card{aspect-ratio:4/3;min-height:auto;}
-  .project-card-body{padding:24px 22px 26px;}
-  .project-card-title{font-size:1.6rem;}
+  .project-grid{grid-template-columns:1fr;gap:16px;margin-top:24px;max-width:450px;}
+  .project-card{height:auto;aspect-ratio:1/1;padding-bottom:0;min-height:auto;}
+  .project-card-body{padding:18px 18px 20px;}
+  .project-card-title{font-size:1.25rem;}
 }
 
 /* ============ WORK SLIDER (Experience, Research & Small Wins) ============ */
@@ -256,6 +308,8 @@ img{max-width:100%;display:block;}
   gap:16px;
   width:100%;
   max-width:640px;
+  /* Contained "block" treatment (bordered panel around thumb + copy),
+     matching the boxed card style referenced from the moodboard. */
   border:1.5px solid var(--panel-body, var(--border));
   border-radius:var(--radius-xl);
   padding:16px;
@@ -272,6 +326,9 @@ img{max-width:100%;display:block;}
   transition:transform .3s ease;
 }
 .work-card:hover .work-thumb{transform:scale(1.03);}
+/* Small Wins: square thumbs with a generous rounded corner, instead
+   of the 16:10 crop used elsewhere. Scoped to #awards only — the
+   only section still using .work-thumb. */
 #awards .work-thumb{aspect-ratio:1/1;border-radius:var(--radius-xl);}
 .work-thumb img{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
@@ -305,6 +362,9 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--text-muted));
 }
 
+/* Research: same slider pattern as Projects/Small Wins, scaled down.
+   Capped at 1.875rem (30px) so it sits inside the H2 band (24-30px)
+   instead of drifting into H1 territory at wide viewports. */
 .work-wrap-sm .work-sticky{padding:56px 32px;}
 .work-wrap-sm .section-heading{
   margin-bottom:32px;
@@ -315,6 +375,8 @@ img{max-width:100%;display:block;}
 .work-wrap-sm.has-slider .work-slide{width:min(400px, 78vw);}
 .work-wrap-sm.has-slider .work-track{gap:24px;}
 
+/* Body/description copy — nudged from 12.8px to 14px so it reads as
+   supporting body text rather than dropping into caption range. */
 .work-desc{
   margin:-2px 0 0;
   font-size:.875rem;
@@ -322,6 +384,7 @@ img{max-width:100%;display:block;}
   color:var(--panel-body, var(--text-muted));
 }
 
+/* Tags were rendering below the 12px caption floor; bumped to 12px. */
 .status-tag{
   display:inline-block;
   align-self:flex-start;
@@ -336,7 +399,12 @@ img{max-width:100%;display:block;}
   background:rgba(128,128,128,.14);
 }
 
-/* ============ RESEARCH CARD (image-left / info-right block) ============ */
+/* ============ RESEARCH CARD (image-left / info-right block) ============
+   Same .work-card shell (border, radius, slider mechanics) as
+   Projects/Small Wins, but laid out as a horizontal block — media on
+   one side, copy + a monospace meta row (Status/Type) on the other,
+   with a small accent square in the corner. Scoped to #research so
+   Projects/Experience/Small Wins are untouched. */
 #research .research-card{
   flex-direction:row;
   align-items:stretch;
@@ -403,9 +471,17 @@ img{max-width:100%;display:block;}
   .research-card-body{padding:22px 20px 44px;}
 }
 
+/* Experience section runs long (road + two detailed entries), so it
+   gets tighter outer padding and a smaller heading gap than other
+   sections — keeps both entries reachable within a scroll or two
+   instead of ballooning the panel height. */
 #experience.section, #experience-2.section{padding:calc(var(--nav-h) + 24px) 32px 60px;}
+#projects.section, #projects-2.section{padding:calc(var(--nav-h) + 24px) 32px 40px;}
 #experience .section-heading, #experience-2 .section-heading{margin-bottom:16px;}
 
+/* Each internship now gets its own full panel (spotlight), so the
+   next one covers the previous on scroll instead of two entries
+   competing for space inside one sticky panel. */
 .exp-spotlight{
   display:flex;
   flex-direction:column;
@@ -423,7 +499,15 @@ img{max-width:100%;display:block;}
   .exp-spotlight .exp-node{width:130px;height:130px;border-width:6px;}
 }
 
-/* ============ WORK EXPERIENCE (winding road timeline) ============ */
+/* ============ WORK EXPERIENCE (winding road timeline) ============
+   A single road curves down through each role, bending toward
+   whichever side that entry's logo sits on — the same "journey"
+   infographic pattern as a roadmap graphic, just recolored into the
+   site's red/black/white palette with real org logos standing in for
+   plain numbers. The curve itself is drawn by JS (setupExpRoad in
+   script.js), which measures each .exp-node's real on-screen center
+   and stitches a smooth SVG path through them, so it stays correct
+   at any number of entries, any viewport, and any text length. */
 .exp-road{
   position:relative;
   padding:24px 0 8px;
@@ -456,6 +540,13 @@ img{max-width:100%;display:block;}
   align-items:center;
   column-gap:32px;
   padding:24px 0;
+  /* Tall enough that one entry roughly fills the section's available
+     viewport space on its own. setupSectionPaging() in script.js
+     treats each .exp-item as its own scroll "stop", the same way it
+     already pages between top-level sections — so scrolling snaps
+     cleanly from one entry straight to the next instead of leaving
+     both partway visible at once. The road (drawn in JS from each
+     node's real position) stretches to match automatically. */
   min-height:calc(100svh - 200px);
 }
 .exp-item-a .exp-card{grid-column:1;display:flex;justify-content:flex-end;}
@@ -573,6 +664,8 @@ img{max-width:100%;display:block;}
 .work-dot:hover{transform:scale(1.4);}
 .work-dot.active{background:var(--white);transform:scale(1.3);}
 
+/* Once JS confirms the slider is running, pin the section and let
+   scroll position drive horizontal movement through the track. */
 .work-wrap.has-slider .work-sticky{
   position:sticky;top:var(--nav-h);
   height:calc(100vh - var(--nav-h));
@@ -680,7 +773,13 @@ img{max-width:100%;display:block;}
   display:inline-block;
 }
 
-/* ============ TESTIMONIALS ============ */
+/* ============ TESTIMONIALS ============
+   Static 4-up grid (no slider) of bordered cards, following the
+   same --panel-body/--panel-heading theme vars as everything else
+   so the section slots into the red/dark alternation automatically.
+   Card fill is a translucent overlay (same recipe as .work-card)
+   rather than a hardcoded color, so it reads correctly on either
+   theme without a separate dark/red variant. */
 .testimonials-section{min-height:100svh;}
 .testimonial-grid{
   display:grid;
@@ -879,7 +978,22 @@ img{max-width:100%;display:block;}
 .code-str{color:#98c379;}
 
 
-/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============ */
+/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============
+   Every top-level "page" is pinned with position:sticky at the
+   top of the viewport. Because later elements in normal document
+   flow paint above earlier ones, each new page glides up from the
+   bottom of the screen and settles directly on top of the page
+   before it — a flat, full-bleed cutover with no gap, no rounding,
+   no shadow. z-index is set explicitly (via --i, in DOM order) so
+   the stacking order is unambiguous. */
+/* ============ PAGE OVERLAP / STACK SCROLL EFFECT ============
+   Every top-level "page" is pinned with position:sticky at the
+   top of the viewport. Because later elements in normal document
+   flow paint above earlier ones, each new page glides up from the
+   bottom of the screen and settles directly on top of the page
+   before it — a flat, full-bleed cutover with no gap, no rounding,
+   no shadow. z-index is set explicitly (via --i, in DOM order) so
+   the stacking order is unambiguous. */
 .panel{
   position:sticky;
   top:0;
@@ -887,7 +1001,14 @@ img{max-width:100%;display:block;}
   background:var(--panel-bg, var(--bg));
 }
 
-/* ============ PER-PAGE COLOR THEMES ============ */
+/* ============ PER-PAGE COLOR THEMES ============
+   Every page alternates between just two palettes as you scroll:
+   red bg / white heading / black body text, then black bg / red
+   heading / white body text — no white-background pages.
+   --panel-heading drives each page's big title (.hero-name,
+   .section-heading, .contact-heading, .quote-text via --panel-body);
+   --panel-body drives its supporting text (descriptions, labels,
+   tags). */
 .theme-red{
   --panel-bg:#e7223a;
   --panel-heading:#ffffff;
