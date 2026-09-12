@@ -222,7 +222,7 @@ img{max-width:100%;display:block;}
    the image behind a bottom gradient scrim — rather than the old
    pattern of one project per full-screen page with a square thumb
    above separate text. */
-#projects .section-inner{max-width:2400px;}
+#projects .section-inner{max-width:1000px;}
 .project-grid{
   display:grid;
   grid-template-columns:repeat(2, minmax(0,1fr));
