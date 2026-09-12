@@ -126,7 +126,7 @@ img{max-width:100%;display:block;}
   font-family:'Playfair Display',Georgia,serif;
   font-style:italic;
   font-weight:700;
-  font-size:clamp(2.5rem, 9vw, 8rem);
+  font-size:clamp(2rem, 6.5vw, 6rem);
   line-height:1.15;
   color:var(--panel-body, var(--black));
 }
