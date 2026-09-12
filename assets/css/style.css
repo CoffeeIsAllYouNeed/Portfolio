@@ -183,8 +183,9 @@ img{max-width:100%;display:block;}
 .project-card{
   position:relative;
   display:block;
-  aspect-ratio:1/1;
-  min-height:min(70vh, 640px);
+  width:100%;
+  height:0;
+  padding-bottom:100%;   /* this forces height = width, always */
   border-radius:var(--radius-lg);
   overflow:hidden;
   background:#050505;
